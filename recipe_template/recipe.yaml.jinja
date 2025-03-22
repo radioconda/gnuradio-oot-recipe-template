@@ -1,0 +1,126 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+context:
+  oot_name: {{ oot_name }}
+  name: gnuradio-{{ oot_name }}
+  # update script relies on `git_url` and `git_branch` and can replace:
+  #   `git_rev`, `base_version`, `date_str`, `build`
+  git_url: {{ git_url }}
+  git_branch: {{ git_branch }}
+{%- raw %}
+  git_rev:
+  base_version:
+  date_str:
+  version: ${{ base_version }}.post${{ date_str }}+g${{ git_rev[:7] }}
+  build: "0"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  git: ${{ git_url }}
+  rev: ${{ git_rev }}
+
+build:
+  number: ${{ build }}
+  files:
+    exclude:
+      - "**/gdk-pixbuf*"
+      - "**/*.pyc"
+
+requirements:
+  build:
+    - if: build_platform != target_platform
+      then:
+        - python
+        - cross-python_${{ target_platform }}
+        - numpy
+        - pybind11
+    - ${{ compiler("c") }}
+    - ${{ stdlib("c") }}
+    - ${{ compiler("cxx") }}
+    - cmake
+    - git
+    - ninja
+    - pkg-config
+  host:
+    - gnuradio-core
+    - libboost-devel
+    - numpy
+    - if: win
+      then: pip
+    - pybind11
+    - python
+  run:
+    - numpy
+    - python
+  ignore_run_exports:
+    from_package:
+      # this only builds against the headers
+      - libboost-devel
+{%- endraw %}
+
+tests:
+  - python:
+      imports:
+        - gnuradio.{{ oot_name }}
+      pip_check: false
+  - package_contents:
+      include:
+        - gnuradio/{{ oot_name }}/api.h
+      lib:
+        - gnuradio-{{ oot_name }}
+      files:
+        {%- if installs_examples %}
+        # Example flowgraphs
+        {%- for eg in example_flowgraphs_list %}
+        - {% raw %}${{ "Library/" if win }}{% endraw %}share/gnuradio/examples/{{ oot_name }}/{{ eg.removesuffix(".grc") }}.grc
+        {%- endfor %}
+        {%- endif %}
+
+        {%- if installs_grc_blocks %}
+        # GRC blocks
+        {%- for blk in grc_blocks_list %}
+        - {% raw %}${{ "Library/" if win }}{% endraw %}share/gnuradio/grc/blocks/{{ oot_name }}_{{ blk.removeprefix("{{ oot_name }}_").removesuffix(".block.yml") }}.block.yml
+        {%- endfor %}
+        {%- endif %}
+  - script:
+      {%- if installs_examples %}
+      # Verify that example flowgraphs can be generated
+      - if: unix
+        then: |
+          {%- for eg in example_flowgraphs_list %}
+          grcc $PREFIX/share/gnuradio/examples/{{ oot_name }}/{{ eg.removesuffix(".grc") }}.grc
+          {%- endfor %}
+      - if: win
+        then: |
+          {%- for eg in example_flowgraphs_list %}
+          grcc %PREFIX%\\Library\\share\\gnuradio\\examples\\{{ oot_name }}\\{{ eg.removesuffix(".grc") }}.grc
+          {%- endfor %}
+      {%- endif %}
+    requirements:
+      run:
+        {%- if installs_examples %}
+        - gnuradio-grc
+        {%- endif %}
+
+about:
+  homepage: {{ homepage }}
+  license: {{ license }}
+  license_file: {{ license_file }}
+  summary: {{ summary }}
+  description: >
+    {{ description.strip() | indent(4) }}
+
+    {%- if installs_examples %}
+
+    Example gnuradio-companion flowgraphs are installed with the package and
+    can be found in:
+        - (Linux/macOS) `$CONDA_PREFIX/share/gnuradio/examples/{{ oot_name }}`
+        - (Windows) `%CONDA_PREFIX%\share\gnuradio\examples\{{ oot_name }}`
+    {%- endif %}
+{% if maintainer_username %}
+extra:
+  recipe-maintainers:
+    - {{ maintainer_username }}
+{% endif -%}

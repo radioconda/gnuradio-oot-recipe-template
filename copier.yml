@@ -1,0 +1,120 @@
+_subdirectory: recipe_template
+
+oot_name:
+  type: str
+  help: "Name of this OOT module (without 'gr-' prefix):"
+  placeholder: howto
+  validator: >-
+    {% if not oot_name.strip() %}
+    Invalid OOT module name
+    {% endif %}
+
+git_url:
+  type: str
+  help: "URL to gr-{{ oot_name }}'s git repository:"
+  default: "https://github.com/user/gr-{{ oot_name }}.git"
+  validator: >-
+    {% if not git_url.strip() %}
+    Invalid git URL
+    {% endif %}
+
+git_branch:
+  type: str
+  help: "Git branch to use:"
+  default: main
+  validator: >-
+    {% if not git_branch.strip() %}
+    Invalid git branch
+    {% endif %}
+
+homepage:
+  type: str
+  when: false
+  default: "{{ git_url.removesuffix('.git') }}"
+
+license:
+  type: str
+  help: |-
+    What license is gr-{{ oot_name }} released under?
+       (Enter an SPDX identifier, e.g. GPL-3.0-or-later, BSD-3-Clause, or MIT.
+        See https://spdx.org/licenses/ for valid identifiers.)
+  default: GPL-3.0-or-later
+  validator: >-
+    {% if not license.strip() %}
+    Invalid license identifier
+    {% endif %}
+
+license_file:
+  type: str
+  help: "Path to license file:"
+  default: "LICENSE"
+  validator: >-
+    {% if not license_file.strip() %}
+    Invalid license file path
+    {% endif %}
+
+summary:
+  type: str
+  help: "One-line summary of gr-{{ oot_name }}:"
+  default: "GNU Radio {{ oot_name }} module"
+  validator: >-
+    {% if not summary.strip() %}
+    Invalid summary
+    {% endif %}
+
+description:
+  type: str
+  multiline: true
+  help: "Short description of gr-{{ oot_name }}:"
+  placeholder: "This is a description of gr-{{ oot_name }}."
+  validator: >-
+    {% if not description.strip() %}
+    Invalid description
+    {% endif %}
+
+installs_examples:
+  type: bool
+  help: "Does gr-{{ oot_name }} install example flowgraphs?"
+  default: false
+
+example_flowgraphs:
+  type: str
+  multiline: true
+  when: "{{ installs_examples }}"
+  help: >-
+    List the names of example flowgraphs, one per line:
+    (Do not include the ".grc" suffix)
+  default: ""
+  placeholder: |-
+    example1
+
+example_flowgraphs_list:
+  type: yaml
+  when: false
+  default: "{{ example_flowgraphs.split('\n') | select | list }}"
+
+installs_grc_blocks:
+  type: bool
+  help: "Does gr-{{ oot_name }} install GRC blocks?"
+  default: false
+
+grc_blocks:
+  type: str
+  multiline: true
+  when: "{{ installs_grc_blocks }}"
+  help: >-
+    List the names of GRC blocks, one per line:
+    (Do not include the "{{ oot_name }}_" prefix or ".block.yml" suffix)
+  default: ""
+  placeholder: |-
+    my_sink
+
+grc_blocks_list:
+  type: yaml
+  when: false
+  default: "{{ grc_blocks.split('\n') | select | list }}"
+
+maintainer_username:
+  type: str
+  help: "GitHub username of recipe maintainer:"
+  placeholder: ryanvolz
