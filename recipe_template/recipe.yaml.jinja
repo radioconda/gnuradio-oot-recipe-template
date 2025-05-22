@@ -85,19 +85,26 @@ tests:
         {%- endfor %}
         {%- endif %}
   - script:
-      {%- if installs_examples %}
-      # Verify that example flowgraphs can be generated
       - if: unix
         then: |
+          # Put commands that test the package on Linux or macOS below
+
+          {%- if installs_examples %}
+          # Verify that example flowgraphs can be generated
           {%- for eg in example_flowgraphs_list %}
           grcc $PREFIX/share/gnuradio/examples/{{ oot_name }}/{{ eg.removesuffix(".grc") }}.grc
           {%- endfor %}
+          {%- endif %}
       - if: win
         then: |
+          :: Put commands that test the package on Windows below
+
+          {%- if installs_examples %}
+          :: Verify that example flowgraphs can be generated
           {%- for eg in example_flowgraphs_list %}
           grcc %PREFIX%\\Library\\share\\gnuradio\\examples\\{{ oot_name }}\\{{ eg.removesuffix(".grc") }}.grc
           {%- endfor %}
-      {%- endif %}
+          {%- endif %}
     requirements:
       run:
         {%- if installs_examples %}
