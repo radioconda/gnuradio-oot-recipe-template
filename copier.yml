@@ -114,6 +114,11 @@ grc_blocks_list:
   when: false
   default: "{{ grc_blocks.split('\n') | select | list }}"
 
+python_only:
+  type: bool
+  help: "Does gr-{{ oot_name }} only install Python code (i.e. no compiled C++ library)?"
+  default: false
+
 maintainer_username:
   type: str
   help: "GitHub username of recipe maintainer:"
