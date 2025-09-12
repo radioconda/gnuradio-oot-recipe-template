@@ -35,7 +35,11 @@ requirements:
   build:
     - if: build_platform != target_platform
       then:
+        {%- if python_only %}
+        - {% raw %}python ${{ python_min }}.*{% endraw %}
+        {%- else %}
         - python
+        {%- endif %}
         - {% raw %}cross-python_${{ target_platform }}{% endraw %}
         - numpy
         - pybind11
