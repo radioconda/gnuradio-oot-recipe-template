@@ -33,14 +33,12 @@ build:
 
 requirements:
   build:
-    {%- if not python_only %}
     - if: build_platform != target_platform
       then:
         - python
         - {% raw %}cross-python_${{ target_platform }}{% endraw %}
         - numpy
         - pybind11
-    {%- endif %}
     - {% raw %}${{ compiler("c") }}{% endraw %}
     - {% raw %}${{ stdlib("c") }}{% endraw %}
     - {% raw %}${{ compiler("cxx") }}{% endraw %}
